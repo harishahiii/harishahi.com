@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Hari Shahi</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Messages Styles */
+        .messages-container {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .messages-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .message-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 1.5rem;
+            transition: var(--transition);
+            border-left: 4px solid transparent;
+        }
+
+        .message-item.unread {
+            border-left-color: var(--cosmic-teal);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .message-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .message-name {
+            flex-grow: 1;
+            margin-right: 1rem;
+        }
+
+        .message-email {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .message-date {
+            font-size: 0.8rem;
+            opacity: 0.6;
+        }
+
+        .message-content {
+            margin-top: 1rem;
+            line-height: 1.5;
+        }
+
+        .message-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            justify-content: flex-end;
+        }
+
+        .message-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+        .mark-read-btn {
+            background: rgba(110, 69, 226, 0.2);
+            color: var(--text-light);
+        }
+
+        .mark-read-btn:hover {
+            background: rgba(110, 69, 226, 0.3);
+        }
+
+        .delete-msg-btn {
+            background: rgba(255, 69, 58, 0.2);
+            color: var(--text-light);
+        }
+
+        .delete-msg-btn:hover {
+            background: rgba(255, 69, 58, 0.3);
+        }
+
+        .unread-count {
+            background: var(--cosmic-teal);
+            color: var(--text-dark);
+            padding: 0.2rem 0.6rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-right: 1rem;
+        }
+
+        :root {
+            --cosmic-deep: #0a0e23;
+            --cosmic-purple: #6e45e2;
+            --cosmic-pink: #b845d3;
+            --cosmic-blue: #2d8df8;
+            --cosmic-teal: #11d8c6;
+            --text-light: rgba(255,255,255,0.9);
+            --text-dark: #1a1a2e;
+            --transition: all 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: radial-gradient(ellipse at bottom, var(--cosmic-deep) 0%, #000000 100%);
+            color: var(--text-light);
+            font-family: 'Montserrat', sans-serif;
+            min-height: 100vh;
+        }
+
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            padding: 1rem;
+            background: rgba(10, 14, 35, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 1px solid rgba(110, 69, 226, 0.2);
+        }
+
+        .admin-title {
+            font-size: 1.8rem;
+            color: var(--cosmic-teal);
+        }
+
+        .logout-btn {
+            padding: 0.7rem 1.5rem;
+            background: linear-gradient(45deg, var(--cosmic-purple), var(--cosmic-pink));
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(110, 69, 226, 0.3);
+        }
+
+        .admin-section {
+            background: rgba(10, 14, 35, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 1px solid rgba(110, 69, 226, 0.2);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: var(--cosmic-teal);
+            margin-bottom: 1.5rem;
+        }
+
+        .category-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .category-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 1.5rem;
+            transition: var(--transition);
+        }
+
+        .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(110, 69, 226, 0.2);
+        }
+
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .category-name {
+            font-size: 1.2rem;
+            color: var(--cosmic-teal);
+        }
+
+        .category-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .action-btn:hover {
+            color: var(--cosmic-teal);
+        }
+
+        .file-list {
+            list-style: none;
+            margin-top: 1rem;
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.05);
+            margin-bottom: 0.5rem;
+        }
+
+        .file-name {
+            flex-grow: 1;
+            margin-right: 1rem;
+        }
+
+        .add-category-form {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .admin-input {
+            flex-grow: 1;
+            padding: 0.7rem 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(110, 69, 226, 0.3);
+            border-radius: 5px;
+            color: var(--text-light);
+        }
+
+        .admin-input:focus {
+            outline: none;
+            border-color: var(--cosmic-teal);
+        }
+
+        .add-btn {
+            padding: 0.7rem 1.5rem;
+            background: linear-gradient(45deg, var(--cosmic-purple), var(--cosmic-teal));
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .add-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(110, 69, 226, 0.3);
+        }
+
+        .upload-area {
+            border: 2px dashed rgba(110, 69, 226, 0.3);
+            border-radius: 10px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .upload-area:hover {
+            border-color: var(--cosmic-teal);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Messages Styles */
+        .messages-container {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .messages-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .message-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 1.5rem;
+            transition: var(--transition);
+            border-left: 4px solid transparent;
+        }
+
+        .message-item.unread {
+            border-left-color: var(--cosmic-teal);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .message-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .message-name {
+            flex-grow: 1;
+            margin-right: 1rem;
+        }
+
+        .message-email {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .message-date {
+            font-size: 0.8rem;
+            opacity: 0.6;
+        }
+
+        .message-content {
+            margin-top: 1rem;
+            line-height: 1.5;
+        }
+
+        .message-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            justify-content: flex-end;
+        }
+
+        .message-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+        .mark-read-btn {
+            background: rgba(110, 69, 226, 0.2);
+            color: var(--text-light);
+        }
+
+        .mark-read-btn:hover {
+            background: rgba(110, 69, 226, 0.3);
+        }
+
+        .delete-msg-btn {
+            background: rgba(255, 69, 58, 0.2);
+            color: var(--text-light);
+        }
+
+        .delete-msg-btn:hover {
+            background: rgba(255, 69, 58, 0.3);
+        }
+
+        .unread-count {
+            background: var(--cosmic-teal);
+            color: var(--text-dark);
+            padding: 0.2rem 0.6rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-right: 1rem;
+        }
+
+        .upload-icon {
+            font-size: 2rem;
+            color: var(--cosmic-teal);
+            margin-bottom: 1rem;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        /* Memories Section Styles */
+        .memories-upload-area {
+            margin-bottom: 2rem;
+        }
+
+        .memories-dropzone {
+            border: 2px dashed rgba(110, 69, 226, 0.3);
+            border-radius: 15px;
+            padding: 3rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .memories-dropzone:hover {
+            border-color: var(--cosmic-teal);
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .memories-dropzone .upload-icon {
+            font-size: 3rem;
+            color: var(--cosmic-teal);
+            margin-bottom: 1rem;
+        }
+
+        .memories-dropzone p {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-light);
+        }
+
+        .upload-hint {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .memories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .memory-item {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            aspect-ratio: 1;
+            background: rgba(255, 255, 255, 0.05);
+            transition: var(--transition);
+        }
+
+        .memory-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(110, 69, 226, 0.2);
+        }
+
+        .memory-item img,
+        .memory-item video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .memory-item .memory-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .memory-item:hover .memory-overlay {
+            opacity: 1;
+        }
+
+        .memory-date {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .memory-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .memory-btn {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: var(--transition);
+            padding: 0.3rem;
+        }
+
+        .memory-btn:hover {
+            color: var(--cosmic-teal);
+            transform: scale(1.1);
+        }
+
+        .memory-item.video-item::after {
+            content: '\f144';
+            font-family: 'Font Awesome 5 Free';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            opacity: 0.8;
+            transition: var(--transition);
+        }
+
+        .memory-item.video-item:hover::after {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        .upload-btn {
+            margin-top: 1.5rem;
+            padding: 0.8rem 1.5rem;
+            background: linear-gradient(45deg, var(--cosmic-purple), var(--cosmic-pink));
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(110, 69, 226, 0.3);
+        }
+
+        .upload-btn i {
+            font-size: 1.2rem;
+        }
+
+        .upload-status {
+            margin-top: 1rem;
+            text-align: center;
+            font-size: 0.9rem;
+            min-height: 1.5rem;
+            transition: var(--transition);
+        }
+
+        .upload-status.success {
+            color: #4CAF50;
+        }
+
+        .upload-status.error {
+            color: #f44336;
+        }
+
+        .upload-progress {
+            margin-top: 1rem;
+            width: 100%;
+            max-width: 300px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-left: auto;
+            margin-right: auto;
+            display: none;
+        }
+
+        .upload-progress-bar {
+            height: 100%;
+            background: linear-gradient(45deg, var(--cosmic-purple), var(--cosmic-pink));
+            width: 0;
+            transition: width 0.3s ease;
+        }
+
+        .memories-dropzone.dragover {
+            border-color: var(--cosmic-teal);
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .memories-filter {
+            display: flex;
+            gap: 1rem;
+            margin: 2rem 0;
+            justify-content: center;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 50px;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .filter-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(45deg, var(--cosmic-purple), var(--cosmic-pink));
+            color: white;
+        }
+
+        .pagination {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .pagination button {
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 5px;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .pagination button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .pagination button.active {
+            background: linear-gradient(45deg, var(--cosmic-purple), var(--cosmic-pink));
+            color: white;
+        }
+
+        .pagination span {
+            padding: 0.5rem;
+            color: var(--text-light);
+            opacity: 0.5;
+        }
+
+        .no-memories {
+            text-align: center;
+            opacity: 0.7;
+            padding: 2rem;
+            grid-column: 1 / -1;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <header class="admin-header">
+            <h1 class="admin-title">Admin Panel</h1>
+            <div class="header-actions">
+                <span id="unreadCount" class="unread-count" style="display: none;"></span>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </header>
+
+        <!-- Messages Section -->
+        <section class="admin-section" id="messagesSection">
+            <h2 class="section-title">Messages</h2>
+            <div class="messages-container">
+                <div class="messages-list" id="messagesList">
+                    <!-- Messages will be loaded here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Gallery Section -->
+        <section class="admin-section">
+            <h2 class="section-title">Gallery Management</h2>
+            <div class="add-category-form">
+                <input type="text" class="admin-input" id="galleryCategory" placeholder="Add new gallery category">
+                <button class="add-btn" onclick="addGalleryCategory()">Add Category</button>
+            </div>
+            <div class="category-list" id="galleryCategoryList">
+                <!-- Categories will be added here dynamically -->
+            </div>
+        </section>
+
+        <!-- Documents Section -->
+        <section class="admin-section">
+            <h2 class="section-title">Document Management</h2>
+            <div class="add-category-form">
+                <input type="text" class="admin-input" id="documentCategory" placeholder="Add new document category">
+                <button class="add-btn" onclick="addDocumentCategory()">Add Category</button>
+            </div>
+            <div class="category-list" id="documentCategoryList">
+                <!-- Categories will be added here dynamically -->
+            </div>
+        </section>
+
+        <!-- Memories Section -->
+        <section class="admin-section">
+            <h2 class="section-title">Memories Management</h2>
+            <div class="memories-upload-area">
+                <div class="memories-dropzone" id="memoriesDropzone" ondrop="handleMemoriesDrop(event)" ondragover="handleMemoriesDragOver(event)" ondragleave="handleMemoriesDragLeave(event)">
+                    <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                    <p>Drop photos and videos here</p>
+                    <span class="upload-hint">Supported formats: JPG, PNG, MP4, MOV (Max 50MB)</span>
+                    <button class="upload-btn" onclick="triggerMemoriesUpload(event)">
+                        <i class="fas fa-plus"></i> Select Files
+                    </button>
+                    <div id="uploadProgress" class="upload-progress">
+                        <div class="upload-progress-bar"></div>
+                    </div>
+                    <div id="uploadStatus" class="upload-status"></div>
+                </div>
+            </div>
+            <div class="memories-filter">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="image">Photos</button>
+                <button class="filter-btn" data-filter="video">Videos</button>
+            </div>
+            <div class="memories-grid" id="memoriesGrid">
+                <!-- Memories will be loaded here -->
+            </div>
+            <div class="pagination" id="memoriesPagination">
+                <!-- Pagination will be added here -->
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Check authentication
+        function checkAuth() {
+            if (!localStorage.getItem('adminLoggedIn')) {
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('adminLoggedIn');
+            window.location.href = 'index.html';
+        }
+
+        // Initialize data structure with memories
+        const defaultData = {
+            gallery: {
+                'Travel Adventure': [],
+                'Beautiful Nature': [],
+                'Professional Portraits': [],
+                'Event Coverage': []
+            },
+            documents: {
+                'Resume': [],
+                'Certifications': [],
+                'Portfolio': []
+            },
+            memories: []
+        };
+
+        // Load or initialize data
+        let siteData = JSON.parse(localStorage.getItem('siteData')) || defaultData;
+        localStorage.setItem('siteData', JSON.stringify(siteData));
+
+        // Create category card
+        function createCategoryCard(name, type, files) {
+            return `
+                <div class="category-card">
+                    <div class="category-header">
+                        <h3 class="category-name">${name}</h3>
+                        <div class="category-actions">
+                            <button class="action-btn" onclick="uploadFiles('${type}', '${name}')">
+                                <i class="fas fa-upload"></i>
+                            </button>
+                            <button class="action-btn" onclick="deleteCategory('${type}', '${name}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="file-list">
+                        ${files.map(file => `
+                            <div class="file-item">
+                                <span class="file-name">${file.name}</span>
+                                <button class="action-btn" onclick="deleteFile('${type}', '${name}', '${file.name}')">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="upload-area" onclick="triggerFileInput('${type}', '${name}')">
+                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                        <p>Click to upload files</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Render categories
+        function renderCategories() {
+            const galleryList = document.getElementById('galleryCategoryList');
+            const documentList = document.getElementById('documentCategoryList');
+
+            galleryList.innerHTML = Object.entries(siteData.gallery)
+                .map(([name, files]) => createCategoryCard(name, 'gallery', files))
+                .join('');
+
+            documentList.innerHTML = Object.entries(siteData.documents)
+                .map(([name, files]) => createCategoryCard(name, 'documents', files))
+                .join('');
+        }
+
+        // Add new category
+        function addCategory(type) {
+            const input = document.getElementById(type + 'Category');
+            const name = input.value.trim();
+
+            if (name) {
+                siteData[type][name] = [];
+                localStorage.setItem('siteData', JSON.stringify(siteData));
+                renderCategories();
+                input.value = '';
+            }
+        }
+
+        function addGalleryCategory() {
+            addCategory('gallery');
+        }
+
+        function addDocumentCategory() {
+            addCategory('documents');
+        }
+
+        // Delete category
+        function deleteCategory(type, name) {
+            if (confirm(`Are you sure you want to delete the category "${name}"?`)) {
+                delete siteData[type][name];
+                localStorage.setItem('siteData', JSON.stringify(siteData));
+                renderCategories();
+            }
+        }
+
+        // File upload handling
+        function triggerFileInput(type, category) {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.multiple = type === 'gallery';
+            input.accept = type === 'gallery' ? 'image/*' : '.pdf,.doc,.docx';
+            
+            input.onchange = (e) => handleFiles(e.target.files, type, category);
+            input.click();
+        }
+
+        function handleFiles(files, type, category) {
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const fileData = {
+                        name: file.name,
+                        data: e.target.result,
+                        date: new Date().toISOString()
+                    };
+                    siteData[type][category].push(fileData);
+                    localStorage.setItem('siteData', JSON.stringify(siteData));
+                    renderCategories();
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Delete file
+        function deleteFile(type, category, fileName) {
+            if (confirm(`Are you sure you want to delete "${fileName}"?`)) {
+                siteData[type][category] = siteData[type][category]
+                    .filter(file => file.name !== fileName);
+                localStorage.setItem('siteData', JSON.stringify(siteData));
+                renderCategories();
+            }
+        }
+
+        // Load and display messages
+        function loadMessages() {
+            const messagesList = document.getElementById('messagesList');
+            const unreadCountSpan = document.getElementById('unreadCount');
+            const messages = JSON.parse(localStorage.getItem('contactMessages') || '[]');
+            const unreadCount = messages.filter(msg => !msg.read).length;
+
+            // Update unread count
+            if (unreadCount > 0) {
+                unreadCountSpan.textContent = unreadCount;
+                unreadCountSpan.style.display = 'inline-block';
+            } else {
+                unreadCountSpan.style.display = 'none';
+            }
+
+            // Display messages
+            messagesList.innerHTML = messages.length === 0 
+                ? '<p style="text-align: center; opacity: 0.7;">No messages yet</p>'
+                : messages.map(msg => `
+                    <div class="message-item ${msg.read ? '' : 'unread'}" data-id="${msg.id}">
+                        <div class="message-header">
+                            <div class="message-info">
+                                <div class="message-name">${msg.name}</div>
+                                <div class="message-email">${msg.email}</div>
+                                <div class="message-date">${new Date(msg.timestamp).toLocaleString()}</div>
+                                ${msg.device ? `<div class="message-device" style="font-size: 0.8rem; opacity: 0.7; margin-top: 0.3rem;">Device: ${msg.device}</div>` : ''}
+                            </div>
+                        </div>
+                        <div class="message-content">${msg.message}</div>
+                        <div class="message-actions">
+                            ${!msg.read ? `
+                                <button class="message-btn mark-read-btn" onclick="markAsRead(${msg.id})">
+                                    Mark as Read
+                                </button>
+                            ` : ''}
+                            <button class="message-btn delete-msg-btn" onclick="deleteMessage(${msg.id})">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+        }
+
+        // Mark message as read
+        function markAsRead(messageId) {
+            const messages = JSON.parse(localStorage.getItem('contactMessages') || '[]');
+            const updatedMessages = messages.map(msg => 
+                msg.id === messageId ? { ...msg, read: true } : msg
+            );
+            localStorage.setItem('contactMessages', JSON.stringify(updatedMessages));
+            loadMessages();
+        }
+
+        // Delete message
+        function deleteMessage(messageId) {
+            if (confirm('Are you sure you want to delete this message?')) {
+                const messages = JSON.parse(localStorage.getItem('contactMessages') || '[]');
+                const updatedMessages = messages.filter(msg => msg.id !== messageId);
+                localStorage.setItem('contactMessages', JSON.stringify(updatedMessages));
+                loadMessages();
+            }
+        }
+
+        // Memories Management Functions
+        let currentPage = 1;
+        let currentFilter = 'all';
+        const itemsPerPage = 12;
+
+        async function uploadMemories(files) {
+            const formData = new FormData();
+            let totalSize = 0;
+            
+            // Validate files
+            for (const file of files) {
+                if (file.size > 50 * 1024 * 1024) {
+                    showUploadStatus(`${file.name} is too large (max 50MB)`, 'error');
+                    return;
+                }
+                if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+                    showUploadStatus(`${file.name} is not a supported file type`, 'error');
+                    return;
+                }
+                totalSize += file.size;
+                formData.append('files', file);
+            }
+
+            const progressBar = document.querySelector('.upload-progress-bar');
+            const progressContainer = document.getElementById('uploadProgress');
+            progressContainer.style.display = 'block';
+            progressBar.style.width = '0%';
+
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('Not authorized. Please log in again.');
+                }
+
+                const response = await fetch('/api/memories', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData,
+                    onUploadProgress: (progressEvent) => {
+                        const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                        progressBar.style.width = percentCompleted + '%';
+                    }
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Upload failed');
+                }
+
+                const result = await response.json();
+                showUploadStatus(`Successfully uploaded ${result.count} files!`, 'success');
+                loadMemories(currentPage, currentFilter);
+            } catch (error) {
+                showUploadStatus(error.message, 'error');
+            } finally {
+                setTimeout(() => {
+                    progressContainer.style.display = 'none';
+                    progressBar.style.width = '0%';
+                }, 2000);
+            }
+        }
+
+        function showUploadStatus(message, type = 'success') {
+            const statusDiv = document.getElementById('uploadStatus');
+            statusDiv.textContent = message;
+            statusDiv.className = `upload-status ${type}`;
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusDiv.textContent = '';
+                    statusDiv.className = 'upload-status';
+                }, 5000);
+            }
+        }
+
+        async function loadMemories(page = 1, type = 'all') {
+            try {
+                const queryParams = new URLSearchParams({
+                    page,
+                    limit: itemsPerPage
+                });
+                
+                if (type !== 'all') {
+                    queryParams.append('type', type);
+                }
+
+                const response = await fetch(`/api/memories?${queryParams}`);
+                if (!response.ok) {
+                    throw new Error('Failed to load memories');
+                }
+
+                const { data, pagination } = await response.json();
+                renderMemories(data);
+                renderPagination(pagination);
+            } catch (error) {
+                showUploadStatus(error.message, 'error');
+            }
+        }
+
+        function renderMemories(memories) {
+            const grid = document.getElementById('memoriesGrid');
+            
+            if (memories.length === 0) {
+                grid.innerHTML = '<p class="no-memories">No memories found</p>';
+                return;
+            }
+
+            grid.innerHTML = memories.map(memory => `
+                <div class="memory-item ${memory.type}-item" data-id="${memory._id}">
+                    ${memory.type === 'image' 
+                        ? `<img src="${memory.thumbnailUrl || memory.url}" alt="${memory.title || 'Memory'}" loading="lazy">`
+                        : `<video src="${memory.url}" muted loop></video>`
+                    }
+                    <div class="memory-overlay">
+                        <div class="memory-date">${new Date(memory.createdAt).toLocaleDateString()}</div>
+                        <div class="memory-actions">
+                            <button class="memory-btn" onclick="viewMemory('${memory._id}')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="memory-btn" onclick="deleteMemory('${memory._id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Add hover effect for videos
+            document.querySelectorAll('.video-item video').forEach(video => {
+                video.addEventListener('mouseenter', function() {
+                    this.play();
+                });
+                video.addEventListener('mouseleave', function() {
+                    this.pause();
+                    this.currentTime = 0;
+                });
+            });
+        }
+
+        function renderPagination(pagination) {
+            const container = document.getElementById('memoriesPagination');
+            const { current, pages } = pagination;
+            
+            if (pages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = '';
+            if (current > 1) {
+                html += `<button onclick="loadMemories(${current - 1}, '${currentFilter}')">&laquo; Previous</button>`;
+            }
+            
+            for (let i = 1; i <= pages; i++) {
+                if (i === current) {
+                    html += `<button class="active">${i}</button>`;
+                } else if (i === 1 || i === pages || (i >= current - 2 && i <= current + 2)) {
+                    html += `<button onclick="loadMemories(${i}, '${currentFilter}')">${i}</button>`;
+                } else if (i === current - 3 || i === current + 3) {
+                    html += '<span>...</span>';
+                }
+            }
+
+            if (current < pages) {
+                html += `<button onclick="loadMemories(${current + 1}, '${currentFilter}')">Next &raquo;</button>`;
+            }
+
+            container.innerHTML = html;
+        }
+
+        function triggerMemoriesUpload(e) {
+            e.preventDefault();
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.multiple = true;
+            input.accept = 'image/*,video/*';
+            input.onchange = (e) => {
+                if (e.target.files.length > 0) {
+                    uploadMemories(e.target.files);
+                }
+            };
+            input.click();
+        }
+
+        function handleMemoriesDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+            uploadMemories(e.dataTransfer.files);
+        }
+
+        function handleMemoriesDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('dragover');
+        }
+
+        function handleMemoriesDragLeave(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+        }
+
+        async function deleteMemory(id) {
+            if (!confirm('Are you sure you want to delete this memory?')) {
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('Not authorized. Please log in again.');
+                }
+
+                const response = await fetch(`/api/memories/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to delete memory');
+                }
+
+                showUploadStatus('Memory deleted successfully', 'success');
+                loadMemories(currentPage, currentFilter);
+            } catch (error) {
+                showUploadStatus(error.message, 'error');
+            }
+        }
+
+        function viewMemory(id) {
+            const memoryItem = document.querySelector(`.memory-item[data-id="${id}"]`);
+            const isVideo = memoryItem.classList.contains('video-item');
+            const mediaElement = memoryItem.querySelector(isVideo ? 'video' : 'img');
+            const url = mediaElement.src;
+
+            const win = window.open();
+            win.document.write(`
+                <style>
+                    body { margin: 0; background: black; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+                    ${isVideo ? 'video' : 'img'} { max-width: 100%; max-height: 100vh; }
+                </style>
+                ${isVideo 
+                    ? `<video src="${url}" controls autoplay></video>`
+                    : `<img src="${url.replace('/thumbnails/', '/')}" alt="Memory">`
+                }
+            `);
+        }
+
+        // Add filter functionality
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelector('.filter-btn.active').classList.remove('active');
+                this.classList.add('active');
+                currentFilter = this.dataset.filter;
+                currentPage = 1;
+                loadMemories(currentPage, currentFilter === 'all' ? null : currentFilter);
+            });
+        });
+
+        // Initialize
+        checkAuth();
+        renderCategories();
+        loadMessages();
+        loadMemories();
+    </script>
+</body>
+</html> 
